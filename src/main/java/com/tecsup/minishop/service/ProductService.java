@@ -9,13 +9,14 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private static final double PRECIO_MINIMO = 0.0;
 
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
     public Product save(Product product) {
-        if (product.getPrice() <= 0)
+        if (product.getPrice() <= PRECIO_MINIMO)
             throw new IllegalArgumentException("El precio debe ser mayor a cero");
         if (product.getStock() < 0)
             throw new IllegalArgumentException("El stock no puede ser negativo");
