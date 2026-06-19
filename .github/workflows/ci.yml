@@ -10,13 +10,15 @@ on:
 
 jobs:
   build-and-test:
-    name: Build y Pruebas
+    name: Build, Pruebas y Análisis de Calidad
     runs-on: ubuntu-latest
 
     steps:
 
       - name: 1 - Checkout del código fuente
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 2 - Configurar Java 21
         uses: actions/setup-java@v4
@@ -31,13 +33,25 @@ jobs:
       - name: 4 - Ejecutar pruebas unitarias
         run: mvn test --no-transfer-progress
 
-      - name: 5 - Ejecutar pruebas de integración
+      - name: 5 - Ejecutar pruebas de integración y generar cobertura
         run: mvn verify --no-transfer-progress
 
-      - name: 6 - Publicar reporte de pruebas
+      - name: 6 - Análisis de calidad con SonarCloud
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          mvn sonar:sonar
+          --no-transfer-progress
+          -Dsonar.projectKey=willytorres3001_Lab12-minishop
+          -Dsonar.organization=${{ secrets.SONAR_ORG }}
+
+      - name: 7 - Publicar reporte de pruebas
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: reporte-pruebas
-          path: target/surefire-reports/
+          name: reporte-pruebas-y-cobertura
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
           retention-days: 7
